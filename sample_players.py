@@ -6,6 +6,7 @@ own agent and example heuristic functions.
     ************************************************************************
 """
 
+import random
 from random import randint
 
 
@@ -162,6 +163,64 @@ class RandomPlayer():
         return legal_moves[randint(0, len(legal_moves) - 1)]
 
 
+class RotOppPlayer():
+    """Player that chooses a move to keep rotational opposition."""
+    def rotate_by_pi(self, game, position):
+        max_h = game.height - 1
+        max_w = game.width - 1
+        return (max_h - position[0], max_w - position[1])
+
+    def get_move(self, game, time_left):
+        """Randomly select a move from the available legal moves.
+
+        Parameters
+        ----------
+        game : `isolation.Board`
+            An instance of `isolation.Board` encoding the current state of the
+            game (e.g., player locations and blocked cells).
+
+        time_left : callable
+            A function that returns the number of milliseconds left in the
+            current turn. Returning with any less than 0 ms remaining forfeits
+            the game.
+
+        Returns
+        ----------
+        (int, int)
+            A randomly selected legal move; may return (-1, -1) if there are
+            no available legal moves.
+        """
+        legal_moves = game.get_legal_moves()
+        opp = game.get_opponent(self)
+        blank_spaces = len(game.get_blank_spaces())
+        total_spaces = game.height * game.width
+        center = (game.height // 2, game.height // 2)
+        #print("Total spaces: {}".format(total_spaces))
+        #print("Blank spaces: {}".format(blank_spaces))
+        if not legal_moves:
+            return (-1, -1)
+        elif len(legal_moves) == 1:
+            return legal_moves[0]
+        elif blank_spaces == total_spaces:
+            return opp_move_rot
+        elif blank_spaces < total_spaces:
+            opp_pos = game.get_player_location(opp)
+            opp_move_rot = self.rotate_by_pi(game, opp_pos)
+            opp_moves = game.get_legal_moves(opp)
+            random.shuffle(opp_moves)
+            #print("Opponent position: {}".format(opp_pos))
+            #print("Opponent rotated position: {}".format(opp_move_rot))
+            if blank_spaces == total_spaces - 1 and opp_pos == center:
+                #print("Center is taken!")
+                return opp_moves[0]
+            elif opp_move_rot in legal_moves:
+                #print("Switching to OPPOSITION MODE!")
+                return opp_move_rot
+            else:
+                return legal_moves[0]
+        pass
+
+
 class GreedyPlayer():
     """Player that chooses next move to maximize heuristic score. This is
     equivalent to a minimax search agent with a search depth of one.
@@ -260,20 +319,20 @@ if __name__ == "__main__":
     import timeit
 
     # create an isolation board (by default 7x7)
-    player2 = GreedyPlayer()
-    player1 = AlphaBetaPlayer(search_depth=3)
+    player2 =RotOppPlayer()
+    player1 = AlphaBetaPlayer()
 
     game = Board(player1, player2)
 
     # place player 1 on the board at row 2, column 3, then place player 2 on
     # the board at row 0, column 5; display the resulting board state.  Note
     # that the .apply_move() method changes the calling object in-place.
-    #game.apply_move((2, 0))
-    #game.apply_move((0, 0))
+    game.apply_move((2, 1))
+    #game.apply_move((2, 1))
     #print(game.to_string())
 
     # players take turns moving on the board, so player1 should be next to move
-    #assert(player1 == game.active_player)
+    #assert(player2 == game.active_player)
 
     # get a list of the legal moves available to the active player
     #print(game.get_legal_moves())
@@ -281,7 +340,7 @@ if __name__ == "__main__":
     #time_millis = lambda: 1000 * timeit.default_timer()
     #move_start = time_millis()
     #time_left = lambda : time_limit - (time_millis() - move_start)
-    #print(player1.get_move(game, time_left))
+    #print(player2.get_move(game, time_left))
     #move_end = time_left()
 
 

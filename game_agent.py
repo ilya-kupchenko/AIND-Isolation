@@ -43,7 +43,7 @@ def custom_score(game, player):
 
     own_moves = len(game.get_legal_moves(player))
     opp_moves = len(game.get_legal_moves(game.get_opponent(player)))
-    return float(own_moves- opp_moves)
+    return float(own_moves - opp_moves)
 
 
 def custom_score_2(game, player):
@@ -310,22 +310,24 @@ class AlphaBetaPlayer(IsolationPlayer):
             Board coordinates corresponding to a legal move; may return
             (-1, -1) if there are no available legal moves.
         """
-        self.time_left = time_left
+        self.time_left = lambda: time_left() - 5.
 
         # Initialize the best move so that this function returns something
         # in case the search fails due to timeout
         best_move = (-1, -1)
 
-        try:
-            # The try/except block will automatically catch the exception
-            # raised when the timer is about to expire.
-            return self.alphabeta(game, self.search_depth)
+        for d in range(0, len(game.get_blank_spaces())):
+            try:
+                # The try/except block will automatically catch the exception
+                # raised when the timer is about to expire.
+                best_move = self.alphabeta(game, d)
 
-        except SearchTimeout:
-            print("Time out for: {}!".format(game._active_player))
-            pass  # Handle any actions required after timeout as needed
-
-        # Return the best move from the last completed search iteration
+            except SearchTimeout:
+                print("Time out for: {} at the depth {}!"
+                      .format(game._active_player, d))
+                return best_move
+                pass  # Handle any actions required after timeout as needed
+            # Return the best move from the last completed search iteration
         return best_move
 
     def min_value(self, game, depth, alpha, beta):

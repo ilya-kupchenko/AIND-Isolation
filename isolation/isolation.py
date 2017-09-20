@@ -11,7 +11,7 @@ import random
 import timeit
 from copy import copy
 
-TIME_LIMIT_MILLIS = 1500
+TIME_LIMIT_MILLIS = 150
 
 
 class Board(object):
@@ -322,7 +322,7 @@ class Board(object):
             game_copy = self.copy()
 
             move_start = time_millis()
-            time_left = lambda : time_limit - (time_millis() - move_start)
+            time_left = lambda: time_limit - (time_millis() - move_start)
             curr_move = self._active_player.get_move(game_copy, time_left)
             move_end = time_left()
 
